@@ -84,7 +84,7 @@ def startinginfo(x,f0,fs,Chunk_Size):
 	voiced_starting_pts(x,f0,vSig,Chunk_Size)
 	return vSig
 if __name__ == '__main__':
-	filename = "/home/dereje/Desktop/SoundFolder/Test.wav"
+	filename ="/home/dere/Desktop/TestFolder/Test.wav"
 	fs,x = wavfile.read(filename)
 	Chunk_Size=1024
 	
