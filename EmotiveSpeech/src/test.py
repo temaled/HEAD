@@ -1,8 +1,11 @@
 from scipy.io import wavfile
+from numpy import inf
 import numpy as np
 from scipy.signal import *
 import matplotlib.pyplot as plt
 import Analysis as alysis
+import Voiced_Unvoiced as voi
+
 filename = "/home/dereje/Desktop/HarvardSentences/Test1.wav"
 fs,x = wavfile.read(filename)
 Chunk_Size = 1024
@@ -19,20 +22,34 @@ InflectFunc = np.poly1d(Func)
 Regions = np.arange(0,500,25)
 
 InflectRegions = np.array(InflectFunc(Regions[np.arange(0,len(Regions)-1)]))
-#print InflectRegions
-#print f0[51:70]
+
 oldFreq = f0[51:70]
 newFreq = oldFreq + InflectRegions
+Threshold = (newFreq/oldFreq).flatten()
+Threshold[Threshold == inf] = 1
+#print Threshold
+
+
 xold = x[51*Chunk_Size:70*Chunk_Size]
 old_Data_Frequency_obj = {"Xold":xold,"Freqold":oldFreq}
-print old_Data_Frequency_obj
+Xold = voi.Data_Blocks(xold,Chunk_Size)
+
+cnt = 0
+ModifiedX = []
+for i in range(len(newFreq)):
+	ModifiedX.append(Xold[i] * Threshold[i])
+	cnt+=1
+ModifiedX =np.int16(np.array(ModifiedX))
+ModifiedX = ModifiedX.flatten()
+#print ModifiedX
+
+
 xp = np.linspace(0,500,25)
 
-#plt.plot(Xpts,Ypts,'.',xp,InflectFunc(xp))
-#plt.show()
-plt.plot(newFreq,oldFreq)
 
-plt.show()
-filename1 = "/home/dereje/Desktop/HarvardSentences/Testneww.wav"
+filename1 = "/home/dereje/Desktop/HarvardSentences/Testxold.wav"
+filename2 = "/home/dereje/Desktop/HarvardSentences/TestxModified.wav"
 
-wavfile.write(filename1,fs,np.array(x))
+wavfile.write(filename1,fs,np.array(xold))
+wavfile.write(filename2,fs,np.array(ModifiedX))
+#----------------------------------------------New-------------------------------------#
