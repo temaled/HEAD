@@ -13,12 +13,10 @@ def stft(x,Chunk_Size,overlap=1):
 def root_mean_square(wavedata,Chunk_Size,fs):
 	num_blocks = int(np.ceil(len(wavedata)/Chunk_Size))
 	timestamps = (np.arange(0,num_blocks -1)* (Chunk_Size/float(fs)))
-
 	rms = []
 	for i in range(0,num_blocks-1):
 		start = i*Chunk_Size
 		stop = np.min([(start + Chunk_Size -1),len(wavedata)])
-
 		rms_seg = np.sqrt(np.mean(wavedata[start:stop]**2))
 		rms.append(rms_seg)
 	#---This is a computation for the RMS values, these will help in identifying which blocks are used for inflection----#
@@ -26,6 +24,14 @@ def root_mean_square(wavedata,Chunk_Size,fs):
 def wave_file_read(filename):
 	fs,x = wavfile.read(filename)
 	return fs , x
+def utterance_region_samples(voiced_samples):
+	voiced_utterance_chunks = []
+	for i in range(1,len(voiced_samples)):
+		if (voiced_samples[i]%voiced_samples[i-1])==1:
+			voiced_utterance_chunks.append(voiced_samples[i])
+		else:
+			voiced_utterance_chunks.append(voiced_samples)
+	return voiced_utterance_chunks
 
 def pre_process(Voiced_Samples):
 	inflection_voices_samples = np.array(Voiced_Samples)
@@ -75,13 +81,13 @@ def consecutive_blocks_in_selected_blocks(selected_inflect_block,Conblocks):
 	# Are blocks that can be  altered with Pitch Up followed by Pitch Down then resolve to normal.
 	return n
 def reshaped_inflection_blocks(n,selected_inflect_block,Conblocks):
-	IBS = (np.reshape(selected_inflect_block,(n,Conblocks/3))).flatten()
-	# IBS is the reshaped Inflection Blocks for the purpose of categorizing blocks for Inflection 
-	# Based on 'n' The IBS is used for the classification of:  
-	return IBS
-def difference_arrays(num_blocks,IBS):
+	Inflection_Block_Samples = (np.reshape(selected_inflect_block,(n,Conblocks/3))).flatten()
+	# Inflection_Block_Samples is the reshaped Inflection Blocks for the purpose of categorizing blocks for Inflection 
+	# Based on 'n' The Inflection_Block_Samples is used for the classification of:  
+	return Inflection_Block_Samples
+def difference_arrays(num_blocks,Inflection_Block_Samples):
 	A = np.array(np.arange(num_blocks))
-	B = np.array(IBS.flatten())
+	B = np.array(Inflection_Block_Samples.flatten())
 	DiffArrays = np.array(list(set(A)-set(B)))
 	return DiffArrays
 

@@ -23,6 +23,9 @@ def emotive_speech(x,fs,typeOfEmotion):
 
 
 	#---------------------preprocess-------------------------------------#
+	print len(voiced_samples)
+	print voiced_samples
+	voice_sample_chunks = prep.utterance_region_samples(voiced_samples)
 	inflection_voice_samples = prep.pre_process(voiced_samples)
 	frequency_of_voiced_samples = fundamental_frequency_in_blocks[inflection_voice_samples]
 	rms = prep.root_mean_square(x,CHUNK_SIZE,fs)[0]
@@ -33,7 +36,7 @@ def emotive_speech(x,fs,typeOfEmotion):
 	n = prep.consecutive_blocks_in_selected_blocks(selected_inflect_block,consecutive_blocks)
 	reshaped_inflect_blocks = prep.reshaped_inflection_blocks(n,selected_inflect_block,consecutive_blocks)
 	differece_arrays = prep.difference_arrays(NUM_BLOCKS,reshaped_inflect_blocks)
-	print n
+	
 	#----------------------synthesis-------------------------------------#
 	
 	if typeOfEmotion == "Happy":
@@ -71,6 +74,6 @@ if __name__ == '__main__':
 	filename = "/home/dereje/Desktop/TestFolder/Test.wav"
 	fs,x = prep.wave_file_read(filename)
 	emotive_speech(x,fs,"Happy")
-	emotive_speech(x,fs,"HappyTensed")
-	emotive_speech(x,fs,"Sad")
-	emotive_speech(x,fs,"Afraid")
+	# emotive_speech(x,fs,"HappyTensed")
+	# emotive_speech(x,fs,"Sad")
+	# emotive_speech(x,fs,"Afraid")
