@@ -5,7 +5,11 @@ import numpy
 import pysptk
 import warnings
 warnings.filterwarnings('ignore')
+<<<<<<< HEAD
 import preprocess as prep
+=======
+import Preprocess as PreP
+>>>>>>> 63daf31b5496f36dc18b5b729d508be832b3dd19
 def data_blocks(x,Chunk_Size):
 	num_blocks = int(numpy.ceil(len(x)/Chunk_Size))		
 	X = numpy.resize(x,(num_blocks,Chunk_Size))
@@ -31,7 +35,11 @@ def zero_crossing_rate_blocks(wavedata,Chunk_Size,fs):
 	return zero_crossing_rate_obj
 	
 def spectral_centroid(wavedata,Chunk_Size,fs):
+<<<<<<< HEAD
 	magnitude_spectrum = prep.stft(x,Chunk_Size)
+=======
+	magnitude_spectrum = PreP.stft(x,Chunk_Size)
+>>>>>>> 63daf31b5496f36dc18b5b729d508be832b3dd19
 	timebins , freqbins = numpy.shape(magnitude_spectrum)
 	time_stamps = (numpy.arange(0,timebins - 1 )*(timebins / float(fs)))
 

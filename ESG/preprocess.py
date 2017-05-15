@@ -49,13 +49,18 @@ def matrix_of_sample_numbers(RMS,inflection_voices_samples):
 def consecutive_blocks_for_inflection(InSamp,Conblocks):
 	#---"inflect_blocks" is the consecutive blocks for inflection----#
 	inflect_blocks =[]
+<<<<<<< HEAD
 	for i in range(len(InSamp)):
+=======
+	for i in range(0 , len(InSamp)-1):
+>>>>>>> 63daf31b5496f36dc18b5b729d508be832b3dd19
 		inflect_blocks.append(InSamp[i] + np.arange(Conblocks))
 	inflect_blocks = np.array(inflect_blocks)		 
 	return inflect_blocks
 def alteration_of_discrete_data(InSamp,Conblocks,inflect_blocks):
 	
 	selected_inflect_block = []
+<<<<<<< HEAD
 	for i in range(len(InSamp)):
 		if (np.abs(inflect_blocks[i][0] - inflect_blocks[i-1][0]))> 2*(Conblocks-1):
 			selected_inflect_block.append(inflect_blocks[i])
@@ -65,6 +70,14 @@ def alteration_of_discrete_data(InSamp,Conblocks,inflect_blocks):
 	
 	# 'selected_inflect_block' are the selected blocks that are used for inflection.
 	# They are selected by comparing the first element of the Inflect block.
+=======
+	for i in range(len(InSamp)-1):
+		if (np.abs(inflect_blocks[i][0] - inflect_blocks[i-1][0]))> 2*(Conblocks-1):
+			selected_inflect_block.append(inflect_blocks[i])
+	selected_inflect_block = np.array(selected_inflect_block)
+	# 'selected_inflect_block' are the selected blocks that are used for inflection.
+	# They are selected by comparing the first element of the Iblock.
+>>>>>>> 63daf31b5496f36dc18b5b729d508be832b3dd19
 	# 'selected_inflect_block' are blocks selected in such a way that 
 	# overlappig/consecutive blocks are not used during inflection.
 	# It contains 21 consecutive blocks.
