@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import nan
 from scipy.io import wavfile
 import warnings
 warnings.filterwarnings('ignore')
@@ -10,32 +11,37 @@ def stft(x,Chunk_Size,overlap=1):
 	w = scipy.hanning(Chunk_Size+1)[:-1]
 	cnt = 0
 	return np.array([np.fft.rfft(w*x[i:i+Chunk_Size]) for i in range (0,len(x)-Chunk_Size,hop)])
-def root_mean_square(wavedata,Chunk_Size,fs):
-	num_blocks = int(np.ceil(len(wavedata)/Chunk_Size))
+def root_mean_square(x,Chunk_Size,fs):
+	num_blocks = int(np.ceil(len(x)/Chunk_Size))
 	timestamps = (np.arange(0,num_blocks -1)* (Chunk_Size/float(fs)))
 	rms = []
 	for i in range(0,num_blocks-1):
 		start = i*Chunk_Size
-		stop = np.min([(start + Chunk_Size -1),len(wavedata)])
-		rms_seg = np.sqrt(np.mean(wavedata[start:stop]**2))
+		stop = np.min([(start + Chunk_Size -1),len(x)])
+		rms_seg = np.sqrt(np.mean(x[start:stop]**2))
 		rms.append(rms_seg)
-	#---This is a computation for the RMS values, these will help in identifying which blocks are used for inflection----#
-	return np.asarray(rms), np.asarray(timestamps)
+	#---This is a computation for the RMS values, This will help in identifying which blocks are used for inflection----#
+	return np.nan_to_num(np.asarray(rms))
 def wave_file_read(filename):
 	fs,x = wavfile.read(filename)
 	return fs , x
-def utterance_region_samples(voiced_samples):
-	voiced_utterance_chunks = []
-	for i in range(1,len(voiced_samples)):
-		if (voiced_samples[i]%voiced_samples[i-1])==1:
-			voiced_utterance_chunks.append(voiced_samples[i])
-		else:
-			voiced_utterance_chunks.append(voiced_samples)
-	return voiced_utterance_chunks
-
+def utterance_region_begin_samples(voiced_samples):
+	voice_sample_begin = []
+	voice_sample_index = []
+	for i in range(len(voiced_samples)):
+		if np.abs((voiced_samples[i] - voiced_samples[i-1]))>1:
+			voice_sample_begin.append(voiced_samples[i])
+			voice_sample_index.append(i)
+	return np.asarray(voice_sample_begin),np.asarray(voice_sample_index)
+def utterance_chunk(voiced_samples,voice_sample_index):
+	voiced_chunk_samples = []
+	for i in range (len(voice_sample_index)-1):
+		voiced_chunk_samples.append(voiced_samples[voice_sample_index[i]:voice_sample_index[i+1]])
+	voiced_chunk_samples.append(voiced_samples[voice_sample_index[-1]:voiced_samples[-1]])
+	return voiced_chunk_samples
 def pre_process(Voiced_Samples):
 	inflection_voices_samples = np.array(Voiced_Samples)
-	return inflection_voices_samples
+	return np.asarray(inflection_voices_samples)
 
 def potential_inflection_fundamental_frequency(Fundamental_Frequency_of_Voiced_Samples): 
 	inflect_frequency = np.array(Fundamental_Frequency_of_Voiced_Samples)	
@@ -44,14 +50,14 @@ def potential_inflection_fundamental_frequency(Fundamental_Frequency_of_Voiced_S
 def matrix_of_sample_numbers(RMS,inflection_voices_samples):     	
 	InSamp = []
 	for i in range(0,len(inflection_voices_samples)-1):
-	  	if RMS[i] <= np.nanmean(RMS):
+	  	if (RMS[i]<np.mean(RMS) or (RMS[i]==0)):
 	 		InSamp.append(inflection_voices_samples[i])
 	# [InSamp] This matrix contains sample numbers for a difference 
 	# of voiced samples that are less than the mean of the RMS values. 
 	# According to D.A.V.I.D, this samples are recorded as attack  
 	# Since we will be applying inflection on new utterance,
 	# This will help for classifications amongst voiced samples.  
-	return InSamp
+	return np.asarray(InSamp)
 def consecutive_blocks_for_inflection(InSamp,Conblocks):
 	#---"inflect_blocks" is the consecutive blocks for inflection----#
 	inflect_blocks =[]
