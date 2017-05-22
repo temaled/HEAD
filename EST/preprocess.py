@@ -97,4 +97,9 @@ def difference_arrays(num_blocks,Inflection_Block_Samples):
 	DiffArrays = np.array(list(set(A)-set(B)))
 	return DiffArrays
 
-	
+def selected_inflect_block_new(inflection_sample_numbers):
+	selected_inflect_block_new = []
+	for i in range (len(inflection_sample_numbers)-1):
+		if len(inflection_sample_numbers[i]) >= 4:
+			selected_inflect_block_new.append(inflection_sample_numbers[i])
+	return selected_inflect_block_new
