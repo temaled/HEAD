@@ -2,120 +2,123 @@ from scipy.signal import butter
 import numpy as np
 from sox.transform import Transformer
 FILE_NAME_PATH = "/home/dereje/Desktop/TestFolder/Test.wav"
-
-def happy_patch(sampleFrequency,n_semitones,Qfactor,Gain,utterance_begin):
-	
-	filenameout = "/home/dereje/Desktop/TestFolder/TestHappy.wav"
-
-	start_time = [-0.127,-0.19747,-0.128,-0.110304]
-	end_time = [-0.06948,-0.0001,0.017596,0.000]
-	utterance_begin = np.asarray(utterance_begin)
-	start_time = np.asarray(start_time)
-	end_time = np.asarray(end_time)
-	
-	inflect_start_times = utterance_begin[np.arange(len(utterance_begin))] + start_time
-	inflect_start_times = np.concatenate(inflect_start_times)
-	inflect_end_times = utterance_begin[np.arange(len(utterance_begin))] + end_time
-	inflect_end_times = np.concatenate(inflect_end_times)
-	inflect_start_times = inflect_start_times.tolist()
-	inflect_end_times = inflect_end_times.tolist()
-	n_bend = len(inflect_start_times)
-	cents = [(140 + n_semitones*100 ),-(n_semitones*100 + 57.333),-82.667,-0.003]
-	
-	
-	cents = np.asarray(cents)
-	factor = n_bend/4
-	cents =np.asarray([cents]* factor)
+CUTFREQ = 4000
+def happy_inflection_function(normalized_time_stamps):
+	time = np.array([0.01,0.058511,0.255319,0.401596,0.500],ndmin=1)
+	fixed_cents = np.array([-200,140,-57.333,0.001,0.001],ndmin=1)
+	func = np.polyfit(time,fixed_cents,4)
+	inflect_func = np.poly1d(func)
+	cents = inflect_func(normalized_time_stamps)
+	return cents.tolist()
+def afraid_inflection_function(normalized_time_stamps):
+	time = np.array([0.01,0.058511,0.255319,0.401596,0.500],ndmin=1)
+	fixed_cents = np.array([120,-200,208,192,-192],ndmin=1)
+	func = np.polyfit(time,fixed_cents,4)
+	inflect_func = np.poly1d(func)
+	cents = inflect_func(normalized_time_stamps)
+	return cents.tolist()
+def happy_tensed_inflection_function(normalized_time_stamps):
+	time = np.array([0.01,0.058511,0.255319,0.401596,0.500],ndmin=1)
+	fixed_cents = np.array([-200,0.001,82.667,-82.667,0.001],ndmin=1)
+	func = np.polyfit(time,fixed_cents,4)
+	inflect_func = np.poly1d(func)
+	cents = inflect_func(normalized_time_stamps)
+	return cents.tolist()
+def normalize_function(utterance_time_stamps):
+	normal = max(utterance_time_stamps) - min(utterance_time_stamps)
+	utterance_time_stamps = (utterance_time_stamps-min(utterance_time_stamps))/normal
+	normal_two = 0.5 - 0.01
+	normailzed_utterance  = (utterance_time_stamps * normal_two) + 0.01
+	return normailzed_utterance 
+def start_end_times(utterance_begin):
+	start_time_now = []
+	end_time_now = []
+	for i in range(len(utterance_begin)):
+		start_time_now.append(utterance_begin[i][:-1])
+		end_time_now.append(utterance_begin[i][1:])
+	start_time_now = np.asarray(start_time_now)
+	end_time_now = np.asarray(end_time_now)
+	return start_time_now,end_time_now
+def happy_cents_for_utterance(start_time_now):
+	cents = []
+	for i in range(len(start_time_now)):
+		cents.append(happy_inflection_function(normalize_function(start_time_now[i])))
 	cents = np.concatenate(cents)
 	cents = cents.tolist()
-	happy_patch = Transformer()
-	happy_patch.pitch(n_semitones,False)
-	cutFreq = sampleFrequency/2
-	
-	happy_patch.bend(n_bend,inflect_start_times,inflect_end_times,cents,50)				
-	
-	happy_patch.treble(Gain,cutFreq,0.5)
-	#happy_patch.equalizer(cutFreq,Qfactor,Gain)
-	happy_patch.build(FILE_NAME_PATH,filenameout)
-	
+	return cents
+def afraid_cents_for_utterance(start_time_now):
+	cents = []
+	for i in range(len(start_time_now)):
+		cents.append(afraid_inflection_function(normalize_function(start_time_now[i])))
+	cents = np.concatenate(cents)
+	cents = cents.tolist()
+	return cents
+def happy_tensed_cents_for_utterance(start_time_now):
+	cents = []
+	for i in range(len(start_time_now)):
+		cents.append(happy_tensed_inflection_function(normalize_function(start_time_now[i])))
+	cents = np.concatenate(cents)
+	cents = cents.tolist()
+	return cents
+def concatenate_list(start_time_now,end_time_now):
+	start_time_now = np.concatenate(start_time_now)
+	end_time_now = np.concatenate(end_time_now)
+	start_time_now = start_time_now.tolist()
+	end_time_now = end_time_now.tolist()
+	return start_time_now,end_time_now
+def sox_init(filenameout,n_semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,Gain,Qfactor):
+	patch = Transformer()
+	patch.pitch(n_semitones,False)
+	patch.bend(number_of_bends,start_time_now,end_time_now,cents,50)			
+	patch.treble(Gain,CUTFREQ,0.5)
+	patch.equalizer(CUTFREQ,Qfactor,Gain)
+	patch.build(FILE_NAME_PATH,filenameout)
+	return patch
+def afraid_sox_init(speed,depth,number_of_bends,start_time_now,end_time_now,cents,filenameout):
+	patch = Transformer()
+	patch.tremolo(speed,depth)
+	patch.bend(number_of_bends,start_time_now,end_time_now,cents,50)			
+	patch.build(FILE_NAME_PATH,filenameout)
+	return patch
+def sad_sox_init(n_semitones,Gain,CUTFREQ,filenameout):
+	CUTFREQ = 3500
+	patch = Transformer()
+	patch.pitch(n_semitones,False)
+	patch.treble(Gain,CUTFREQ,0.5)	
+	patch.build(FILE_NAME_PATH,filenameout)
+	return patch
+
+
+def happy_patch(sampleFrequency,n_semitones,Qfactor,Gain,utterance_begin):
+	filenameout = "/home/dereje/Desktop/TestFolder/TestHappy.wav"
+	start_time_now,end_time_now=start_end_times(utterance_begin)
+	cents = happy_cents_for_utterance(start_time_now)
+	start_time_now,end_time_now=concatenate_list(start_time_now,end_time_now)
+	number_of_bends = len(start_time_now)
+	happy_patch = sox_init(filenameout,n_semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,Gain,Qfactor)
 	return happy_patch
 
 def happy_tensed_patch(sampleFrequency,n_semitones,Qfactor,Gain,utterance_begin):
-	
 	filenameout = "/home/dereje/Desktop/TestFolder/TestTensedHappy.wav"
-	start_time = [-0.127,-0.197489,-0.128,-0.110404]
-	end_time = [-0.069490,-0.001,0.017595,-0.012]
-	start_time = np.asarray(start_time)
-	end_time = np.asarray(end_time)
-	utterance_begin = np.asarray(utterance_begin)
-	
-	
-	
-	inflect_start_times = utterance_begin[np.arange(len(utterance_begin))] + start_time
-	inflect_end_times = utterance_begin[np.arange(len(utterance_begin))] + end_time
-	inflect_start_times = np.concatenate(inflect_start_times)
-	inflect_start_times = inflect_start_times.tolist()
-	inflect_end_times = np.concatenate(inflect_end_times)
-	inflect_end_times = inflect_end_times.tolist()
-	
-	n_bend = len(inflect_start_times)
-	cents = [0.001,0.001,(n_semitones*100 +82.667),-(n_semitones*100 + 82.667)]
-	cents = np.asarray(cents)
-	factor = n_bend/4
-	cents =np.asarray([cents]*factor)
-	cents = np.concatenate(cents)
-	cents = cents.tolist()
-
-	cutFreq = sampleFrequency/2
-	happy_tensed_patch  = Transformer()
-	happy_tensed_patch.vad(-1,True,7.0,0.25,1.0,0.25,0.0)
-	happy_tensed_patch.pitch(n_semitones,False)
-	happy_tensed_patch.treble(Gain,cutFreq,0.5)	
-	#happy_tensed_patch.equalizer(cutFreq,Qfactor,Gain)
-	happy_tensed_patch.bend(n_bend,inflect_start_times,inflect_end_times,cents,50)			
-	happy_tensed_patch.build(FILE_NAME_PATH,filenameout)
-	
+	start_time_now,end_time_now=start_end_times(utterance_begin)
+	cents = happy_tensed_cents_for_utterance(start_time_now)
+	start_time_now,end_time_now=concatenate_list(start_time_now,end_time_now)
+	number_of_bends = len(start_time_now)
+	happy_tensed_patch = sox_init(filenameout,n_semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,Gain,Qfactor)
 	return happy_tensed_patch
 
+
 def sad_patch(sampleFrequency,n_semitones,Qfactor,Gain):
-	
 	filenameout = "/home/dereje/Desktop/TestFolder/TestSad.wav"
-	sad_patch = Transformer()
-	cutFreq = sampleFrequency/2.5 
-	sad_patch.pitch(n_semitones,False)
-	sad_patch.equalizer(cutFreq,Qfactor,Gain)
-	sad_patch.build(FILE_NAME_PATH,filenameout)
+	sad_patch = sad_sox_init(n_semitones,Gain,CUTFREQ,filenameout)
 	return sad_patch
 
+
 def afraid_patch(sampleFrequency,speed,depth,utterance_begin):
-	
-	filenameout1 = "/home/dereje/Desktop/TestFolder/TestAfraid.wav"
-	
-	start_time = [-0.127,-0.144138,-0.161,-0.035649]
-	end_time = [-0.016139,-0.034,-0.035649,-0.012]
-	start_time = np.asarray(start_time)
-	end_time = np.asarray(end_time)
-	utterance_begin = np.asarray(utterance_begin)
-	
-	
-	inflect_start_times = utterance_begin[np.arange(len(utterance_begin))] + start_time
-	inflect_start_times = np.concatenate(inflect_start_times)
-	inflect_end_times = utterance_begin[np.arange(len(utterance_begin))] + end_time
-	inflect_end_times = np.concatenate(inflect_end_times)
-	inflect_start_times = inflect_start_times.tolist()
-	inflect_end_times = inflect_end_times.tolist()
-	
-	n_bend = len(inflect_start_times)
-	cents = [-200,+208,+192,-200]
-	cents = np.asarray(cents)
-	factor = n_bend/4
-	cents = np.asarray([cents]*factor)
-	cents = np.concatenate(cents)
-	cents = cents.tolist()
-
-	afraid_patch = Transformer()
-	afraid_patch.tremolo(speed,depth)
-	afraid_patch.bend(n_bend,inflect_start_times,inflect_end_times,cents,50)			
-	afraid_patch.build(FILE_NAME_PATH,filenameout1)
-
+	filenameout = "/home/dereje/Desktop/TestFolder/TestAfraid.wav"
+	start_time_now,end_time_now=start_end_times(utterance_begin)
+	cents = afraid_cents_for_utterance(start_time_now)
+	start_time_now,end_time_now = concatenate_list(start_time_now,end_time_now)
+	number_of_bends = len(start_time_now)
+	afraid_patch = afraid_sox_init(speed,depth,number_of_bends,start_time_now,end_time_now,cents,filenameout)
 	return afraid_patch
