@@ -6,6 +6,7 @@ import pysptk
 import warnings
 warnings.filterwarnings('ignore')
 import preprocess as prep
+
 def data_blocks(x,Chunk_Size):
 	num_blocks = int(numpy.ceil(len(x)/Chunk_Size))		
 	X = numpy.resize(x,(num_blocks,Chunk_Size))
@@ -29,7 +30,17 @@ def zero_crossing_rate_blocks(wavedata,Chunk_Size,fs):
 	
 	zero_crossing_rate_obj = {"zero_crossing_rate_TS":zero_crossing_rate,"TS":time_stamps}
 	return zero_crossing_rate_obj
-	
+def root_mean_square(x,Chunk_Size,fs):
+	num_blocks = int(numpy.ceil(len(x)/Chunk_Size))
+	timestamps = (numpy.arange(0,num_blocks -1)* (Chunk_Size/float(fs)))
+	rms = []
+	for i in range(0,num_blocks-1):
+		start = i*Chunk_Size
+		stop = numpy.min([(start + Chunk_Size -1),len(x)])
+		rms_seg = numpy.sqrt(numpy.mean(x[start:stop]**2))
+		rms.append(rms_seg)
+	#---This is a computation for the RMS values, This will help in identifying which blocks are used for inflection----#
+	return numpy.nan_to_num(numpy.asarray(rms))	
 def spectral_centroid(wavedata,Chunk_Size,fs):
 	magnitude_spectrum = prep.stft(x,Chunk_Size)
 	timebins , freqbins = numpy.shape(magnitude_spectrum)
@@ -43,17 +54,16 @@ def spectral_centroid(wavedata,Chunk_Size,fs):
 	spectral_centroid = numpy.asarray(spectral_centroid)
 	spectral_centroid = numpy.nan_to_num(spectral_centroid)
 	return spectral_centroid, numpy.asarray(time_stamps)
-def unvoiced_starting_pts(x,f0,voiced_unvoiced_starting_info_object,Chunk_Size):
+def unvoiced_starting_pts(x,fs,f0,voiced_unvoiced_starting_info_object,Chunk_Size):
     #register unvoiced signal starting points
-	fs = 44100
 	zero_crossing_rate_array = zero_crossing_rate_blocks(x, Chunk_Size,fs)
 	for i in range (0,len(zero_crossing_rate_array ["zero_crossing_rate_TS"])):
 		if zero_crossing_rate_array["zero_crossing_rate_TS"][i] >= numpy.mean(zero_crossing_rate_array ["zero_crossing_rate_TS"]):
 			voiced_unvoiced_starting_info_object["unvoicedStart"].append (zero_crossing_rate_array["TS"][i])
 			voiced_unvoiced_starting_info_object["USamp"].append(i)
-def voiced_starting_pts(x,f0,voiced_unvoiced_starting_info_object,Chunk_Size):
+def voiced_starting_pts(x,fs,f0,voiced_unvoiced_starting_info_object,Chunk_Size):
     #register voiced signal starting points
-    fs = 44100
+   
     zero_crossing_rate_array = zero_crossing_rate_blocks(x, Chunk_Size,fs)
     for i in range (0,len(zero_crossing_rate_array ["zero_crossing_rate_TS"])):
 		if zero_crossing_rate_array["zero_crossing_rate_TS"][i] <= numpy.mean(zero_crossing_rate_array ["zero_crossing_rate_TS"]):
@@ -76,8 +86,8 @@ def unvoiced_regions(x,f0,voiced_unvoiced_starting_info_object,Chunk_Size):
 	return unvoiced_regions
 def starting_info(x,f0,fs,Chunk_Size):
 	voiced_unvoiced_starting_info_object = {"unvoicedStart":[],"voicedStart":[],"USamp":[],"VSamp" :[]}
-	unvoiced_starting_pts(x,f0,voiced_unvoiced_starting_info_object,Chunk_Size)
-	voiced_starting_pts(x,f0,voiced_unvoiced_starting_info_object,Chunk_Size)
+	unvoiced_starting_pts(x,fs,f0,voiced_unvoiced_starting_info_object,Chunk_Size)
+	voiced_starting_pts(x,fs,f0,voiced_unvoiced_starting_info_object,Chunk_Size)
 	# Starting Info of Voiced/Unvoiced Regions
 	return voiced_unvoiced_starting_info_object
 
