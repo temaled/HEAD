@@ -14,11 +14,38 @@ def data_blocks(x,Chunk_Size):
 	# Blocks of Data by Windowing Through Chunk Size
 	return X
 def pitch_detect(sndarray,fs, chunk_size):
+    """
+	pitch_detect computes the fundamental frequency/pitches of blocks/ of Chunks
+
+	Parameters:sndarray - Discrete Data
+			   fs -Sampling frequency
+			   chunk_size
+	Returns f0 
+    """
     new_sndarray = numpy.asarray(numpy.float64(sndarray))
     f0 = pysptk.swipe(numpy.asarray(new_sndarray), fs, chunk_size, 65,500,0.001,1) 
     # Fundamental Frequency 
     return f0
 def zero_crossing_rate_blocks(wavedata,Chunk_Size,fs):
+	
+	"""
+	zero_crossing_rate_blocks(wavedata,Chunk_Size,fs)
+
+			This module computes the zero crossing rate of blocks.
+			It is important in classifying/detecting the voiced and unvoiced region
+			if the ZCR is smaller then it is categorized as voiced
+			if the ZCR is greater then it is categorized as unvoiced
+			
+
+		Parameter: wavedata - Discrete Data;same as 'x'
+				   Chunk_Size 
+				   fs - Sampling Frequency
+		Returns: zero_crossing_rate_obj - Object containing ZCR in seconds and TimeStamps for the ZCR 
+	
+	See:https://www.asee.org/documents/zones/zone1/2008/student/ASEE12008_0044_paper.pdf
+	"""
+
+
 	num_blocks = int(numpy.ceil(len(wavedata)/Chunk_Size))
 	time_stamps = (numpy.arange(0,num_blocks -1)* (Chunk_Size/float(fs)))
 	zero_crossing_rate = []
@@ -31,6 +58,19 @@ def zero_crossing_rate_blocks(wavedata,Chunk_Size,fs):
 	zero_crossing_rate_obj = {"zero_crossing_rate_TS":zero_crossing_rate,"TS":time_stamps}
 	return zero_crossing_rate_obj
 def root_mean_square(x,Chunk_Size,fs):
+	"""
+	root_mean_square(x,Chunk_Size,fs)
+			root_mean_square computes the root mean square of the blocks and is 
+			important for categorizing inflection/pitch-bending samples
+		Parameters: x
+					Chunk_Size
+					fs
+		Returns		rms-root mean square
+
+	"""
+
+
+
 	num_blocks = int(numpy.ceil(len(x)/Chunk_Size))
 	timestamps = (numpy.arange(0,num_blocks -1)* (Chunk_Size/float(fs)))
 	rms = []
@@ -39,7 +79,7 @@ def root_mean_square(x,Chunk_Size,fs):
 		stop = numpy.min([(start + Chunk_Size -1),len(x)])
 		rms_seg = numpy.sqrt(numpy.mean(x[start:stop]**2))
 		rms.append(rms_seg)
-	#---This is a computation for the RMS values, This will help in identifying which blocks are used for inflection----#
+	
 	return numpy.nan_to_num(numpy.asarray(rms))	
 def spectral_centroid(wavedata,Chunk_Size,fs):
 	magnitude_spectrum = prep.stft(x,Chunk_Size)
@@ -85,6 +125,20 @@ def unvoiced_regions(x,f0,voiced_unvoiced_starting_info_object,Chunk_Size):
 	unvoiced_regions = numpy.abs(unvoiced_regions)
 	return unvoiced_regions
 def starting_info(x,f0,fs,Chunk_Size):
+	"""
+	starting_info specifies the voiced and unvoiced starting points.
+	It also contains the samples of the voiced and unvoiced samples.
+	It will help,mainly,to get the voiced_samples.
+
+	Parameter:	x- Discrete Data
+				f0- Fundamental Frequency
+				fs- Sampling Frequency
+				Chunk_Size
+	Returns:	voiced_unvoiced_starting_info_object- Contains object of the 
+	unvoicedStart,VoicedStart,unvoicedSamples('USamp') and voicedSamples(VSamp)
+
+	"""
+
 	voiced_unvoiced_starting_info_object = {"unvoicedStart":[],"voicedStart":[],"USamp":[],"VSamp" :[]}
 	unvoiced_starting_pts(x,fs,f0,voiced_unvoiced_starting_info_object,Chunk_Size)
 	voiced_starting_pts(x,fs,f0,voiced_unvoiced_starting_info_object,Chunk_Size)
