@@ -12,7 +12,7 @@ def appended_utterance_time_stamps(CONSECUTIVE_BLOCKS,TIME_STAMPS,selected_infle
 			This is appended time stamps for particular utterances.
 			It is important for the synthesis process. It is time stamps
 			of the utternace region we have got from the selected_infect_block
-		
+				
 		Parameter:CONSECUTIVE_BLOCKS
 				  TIME_STAMPS
 				  selected_inflect_block
@@ -47,7 +47,8 @@ def happy_inflection_function(normalized_time_stamps):
 	"""
 
 	time = np.array([0.01,0.058511,0.255319,0.401596,0.500],ndmin=1)
-	fixed_cents = np.array([0.001,140,82.667,-82.667,0.001],ndmin=1)
+	fixed_cents = np.array([-200,140,82.667,0.001,0.001],ndmin=1)
+
 	func = np.polyfit(time,fixed_cents,4)
 	inflect_func = np.poly1d(func)
 	cents = inflect_func(normalized_time_stamps)
@@ -150,7 +151,9 @@ def concatenate_list(start_time_now,end_time_now):
 def happy_sox_init(filenameout,semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,gain,QFACTOR):
 	patch = Transformer()
 	patch.pitch(semitones,False)
-	patch.bend(number_of_bends,start_time_now,end_time_now,cents,50)			
+	patch.tempo(1.1,'s')
+	patch.gain(2.0)
+	#patch.bend(number_of_bends,start_time_now,end_time_now,cents,50)			
 	patch.treble(gain,CUTFREQ,0.5)
 	patch.equalizer(CUTFREQ,QFACTOR,gain)
 	patch.build(FILE_NAME_PATH,filenameout)
@@ -158,13 +161,26 @@ def happy_sox_init(filenameout,semitones,number_of_bends,start_time_now,end_time
 def afraid_sox_init(speed,depth,number_of_bends,start_time_now,end_time_now,cents,filenameout):
 	patch = Transformer()
 	patch.tremolo(speed,depth)
-	patch.bend(number_of_bends,start_time_now,end_time_now,cents,50)			
+	patch.tempo(1.05,'s')
+	patch.gain(1.1)
+	#patch.bend(number_of_bends,start_time_now,end_time_now,cents,50)			
+	patch.build(FILE_NAME_PATH,filenameout)
+	return patch
+def happy_tensed_sox_init(filenameout,semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,gain,QFACTOR):
+	patch = Transformer()
+	patch.pitch(semitones,False)
+	patch.tempo(1.18,'s')
+	patch.gain(gain)
+	#patch.bend(number_of_bends,start_time_now,end_time_now,cents,50)			
+	patch.treble(gain,CUTFREQ,0.5)
+	patch.equalizer(CUTFREQ,QFACTOR,gain)
 	patch.build(FILE_NAME_PATH,filenameout)
 	return patch
 def sad_sox_init(semitones,gain,CUTFREQ,filenameout):
 	CUTFREQ = 3500
 	patch = Transformer()
 	patch.pitch(semitones,False)
+	patch.tempo(0.95,'s')
 	patch.treble(gain,CUTFREQ,0.5)	
 	patch.build(FILE_NAME_PATH,filenameout)
 	return patch
@@ -184,12 +200,9 @@ def happy_patch(sampleFrequency,utterance_begin):
 	
 	See: appended_utterance_time_stamps(CONSECUTIVE_BLOCKS,TIME_STAMPS,selected_inflect_block)
 	"""
-
-
-
 	filenameout = "/home/dereje/Desktop/TestFolder/TestHappy.wav"
 	gain = 3.0
-	semitones = 1.0 * PARAMETER_CONTROL
+	semitones = 1.5 * PARAMETER_CONTROL
 	start_time_now,end_time_now=start_end_times(utterance_begin)
 	cents = happy_cents_for_utterance(start_time_now)
 	start_time_now,end_time_now=concatenate_list(start_time_now,end_time_now)
@@ -220,7 +233,7 @@ def happy_tensed_patch(sampleFrequency,utterance_begin):
 	cents = happy_tensed_cents_for_utterance(start_time_now)
 	start_time_now,end_time_now=concatenate_list(start_time_now,end_time_now)
 	number_of_bends = len(start_time_now)
-	happy_tensed_patch = happy_sox_init(filenameout,semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,gain,QFACTOR)
+	happy_tensed_patch = happy_tensed_sox_init(filenameout,semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,gain,QFACTOR)
 	return happy_tensed_patch
 
 
