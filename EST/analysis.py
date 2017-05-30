@@ -15,16 +15,18 @@ def data_blocks(x,Chunk_Size):
 	return X
 def pitch_detect(sndarray,fs, chunk_size):
     """
-	pitch_detect computes the fundamental frequency/pitches of blocks/ of Chunks
+    pitch_detect(sndarray,fs, chunk_size)
+    
+			pitch_detect computes the fundamental frequency/pitches of blocks/ of Chunks
 
-	Parameters:sndarray - Discrete Data
-			   fs -Sampling frequency
-			   chunk_size
-	Returns f0 
+		Parameters:sndarray - Discrete Data
+				   fs -Sampling frequency
+				   chunk_size
+		Returns f0 
     """
     new_sndarray = numpy.asarray(numpy.float64(sndarray))
     f0 = pysptk.swipe(numpy.asarray(new_sndarray), fs, chunk_size, 65,500,0.001,1) 
-    # Fundamental Frequency 
+    
     return f0
 def zero_crossing_rate_blocks(wavedata,Chunk_Size,fs):
 	
@@ -103,7 +105,6 @@ def unvoiced_starting_pts(x,fs,f0,voiced_unvoiced_starting_info_object,Chunk_Siz
 			voiced_unvoiced_starting_info_object["USamp"].append(i)
 def voiced_starting_pts(x,fs,f0,voiced_unvoiced_starting_info_object,Chunk_Size):
     #register voiced signal starting points
-   
     zero_crossing_rate_array = zero_crossing_rate_blocks(x, Chunk_Size,fs)
     for i in range (0,len(zero_crossing_rate_array ["zero_crossing_rate_TS"])):
 		if zero_crossing_rate_array["zero_crossing_rate_TS"][i] <= numpy.mean(zero_crossing_rate_array ["zero_crossing_rate_TS"]):
@@ -126,16 +127,19 @@ def unvoiced_regions(x,f0,voiced_unvoiced_starting_info_object,Chunk_Size):
 	return unvoiced_regions
 def starting_info(x,f0,fs,Chunk_Size):
 	"""
-	starting_info specifies the voiced and unvoiced starting points.
-	It also contains the samples of the voiced and unvoiced samples.
-	It will help,mainly,to get the voiced_samples.
+	starting_info(x,f0,fs,Chunk_Size)
 
-	Parameter:	x- Discrete Data
-				f0- Fundamental Frequency
-				fs- Sampling Frequency
-				Chunk_Size
-	Returns:	voiced_unvoiced_starting_info_object- Contains object of the 
-	unvoicedStart,VoicedStart,unvoicedSamples('USamp') and voicedSamples(VSamp)
+			starting_info specifies the voiced and unvoiced starting points.
+			It also contains the samples of the voiced and unvoiced samples.
+			It will help,mainly,to get the voiced_samples.
+
+		Parameter:	x- Discrete Data
+					f0- Fundamental Frequency
+					fs- Sampling Frequency
+					Chunk_Size
+	
+		Returns:	voiced_unvoiced_starting_info_object- Contains object of the 
+					unvoicedStart,VoicedStart,unvoicedSamples('USamp') and voicedSamples(VSamp)
 
 	"""
 
