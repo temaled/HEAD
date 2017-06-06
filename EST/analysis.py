@@ -18,7 +18,6 @@ def pitch_detect(sndarray,fs, chunk_size):
     pitch_detect(sndarray,fs, chunk_size)
     
 			pitch_detect computes the fundamental frequency/pitches of blocks/ of Chunks
-
 		Parameters:sndarray - Discrete Data
 				   fs -Sampling frequency
 				   chunk_size
@@ -32,13 +31,11 @@ def zero_crossing_rate_blocks(wavedata,Chunk_Size,fs):
 	
 	"""
 	zero_crossing_rate_blocks(wavedata,Chunk_Size,fs)
-
 			This module computes the zero crossing rate of blocks.
 			It is important in classifying/detecting the voiced and unvoiced region
 			if the ZCR is smaller then it is categorized as voiced
 			if the ZCR is greater then it is categorized as unvoiced
 			
-
 		Parameter: wavedata - Discrete Data;same as 'x'
 				   Chunk_Size 
 				   fs - Sampling Frequency
@@ -68,7 +65,6 @@ def root_mean_square(x,Chunk_Size,fs):
 					Chunk_Size
 					fs
 		Returns		rms-root mean square
-
 	"""
 
 
@@ -128,11 +124,9 @@ def unvoiced_regions(x,f0,voiced_unvoiced_starting_info_object,Chunk_Size):
 def starting_info(x,f0,fs,Chunk_Size):
 	"""
 	starting_info(x,f0,fs,Chunk_Size)
-
 			starting_info specifies the voiced and unvoiced starting points.
 			It also contains the samples of the voiced and unvoiced samples.
 			It will help,mainly,to get the voiced_samples.
-
 		Parameter:	x- Discrete Data
 					f0- Fundamental Frequency
 					fs- Sampling Frequency
@@ -140,7 +134,6 @@ def starting_info(x,f0,fs,Chunk_Size):
 	
 		Returns:	voiced_unvoiced_starting_info_object- Contains object of the 
 					unvoicedStart,VoicedStart,unvoicedSamples('USamp') and voicedSamples(VSamp)
-
 	"""
 
 	voiced_unvoiced_starting_info_object = {"unvoicedStart":[],"voicedStart":[],"USamp":[],"VSamp" :[]}
@@ -148,7 +141,3 @@ def starting_info(x,f0,fs,Chunk_Size):
 	voiced_starting_pts(x,fs,f0,voiced_unvoiced_starting_info_object,Chunk_Size)
 	# Starting Info of Voiced/Unvoiced Regions
 	return voiced_unvoiced_starting_info_object
-
-
-	
-	

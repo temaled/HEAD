@@ -1,14 +1,17 @@
 from scipy.signal import butter
 import numpy as np
 from sox.transform import Transformer
-FILE_NAME_PATH = "/home/dereje/Desktop/TestFolder/Test.wav"
+import rospy
+
+FILE_NAME_PATH = ''
 CUTFREQ = 4000
-QFACTOR = 1
+QFACTOR = 1 
 PARAMETER_CONTROL = 1
+output_file_path=""
+
 def appended_utterance_time_stamps(CONSECUTIVE_BLOCKS,TIME_STAMPS,selected_inflect_block):
 	"""
 	appended_utterance_time_stamps(CONSECUTIVE_BLOCKS,TIME_STAMPS,selected_inflect_block)
-
 			This is appended time stamps for particular utterances.
 			It is important for the synthesis process. It is time stamps
 			of the utternace region we have got from the selected_infect_block
@@ -30,20 +33,17 @@ def appended_utterance_time_stamps(CONSECUTIVE_BLOCKS,TIME_STAMPS,selected_infle
 def happy_inflection_function(normalized_time_stamps):
 	"""
 	happy_inflection_function(normalized_time_stamps)
-
 			This module is a function that accepts time stamps and outputs a cent.
 			The function is made using polynomial fit with a 4th-Degree polynomial
 			The particular seconds and the corresponding cents are provided from 
 			the D.A.V.I.D Windows platform 
 		
 		Parameter: normalized_time_stamps
-
 		Returns: cents- This are helpful in creating inflections
 	
 	See: You can download the application on windows
 		 It is an open source
 		 https://cycling74.com/downloads/older/
-
 	"""
 
 	time = np.array([0.01,0.058511,0.255319,0.401596,0.500],ndmin=1)
@@ -56,13 +56,10 @@ def happy_inflection_function(normalized_time_stamps):
 def afraid_inflection_function(normalized_time_stamps):
 	"""
 	afraid_inflection_function(normalized_time_stamps)
-
 		Parameter: normalized_time_stamps
-
 		Returns:   cents- This are helpful in creating inflections for afraid_patch
 	
 	See: happy_inflection_function(normalized_time_stamps)
-
 	"""
 
 	time = np.array([0.01,0.058511,0.255319,0.401596,0.500],ndmin=1)
@@ -79,11 +76,9 @@ def happy_tensed_inflection_function(normalized_time_stamps):
 			except for specification for the 4th Degree polynomial fitting
 		
 		Parameter: normalized_time_stamps
-
 		Returns:   cents- This are helpful in creating inflections
 	
 	See: happy_inflection_function(normalized_time_stamps)
-
 	"""
 	time = np.array([0.01,0.058511,0.255319,0.401596,0.500],ndmin=1)
 	fixed_cents = np.array([0.001,0.001,82.667,-82.667,0.001],ndmin=1)
@@ -97,7 +92,6 @@ def normalize_function(utterance_time_stamps):
 			
 			This module normalizes the utterance time-stamps within 
 			the bounded time range of the total inflect duration(500ms/0.5s) 
-
 		Parameter: utterance_time_stamps
 		
 		Returns: normalized_utterance
@@ -148,7 +142,7 @@ def concatenate_list(start_time_now,end_time_now):
 	end_time_now = end_time_now.tolist()
 	return start_time_now,end_time_now
 
-def happy_sox_init(filenameout,semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,gain,QFACTOR):
+def happy_sox_init(output_file_path,semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,gain,QFACTOR):
 	patch = Transformer()
 	patch.pitch(semitones,False)
 	patch.tempo(1.1,'s')
@@ -156,17 +150,19 @@ def happy_sox_init(filenameout,semitones,number_of_bends,start_time_now,end_time
 	#patch.bend(number_of_bends,start_time_now,end_time_now,cents,50)			
 	patch.treble(gain,CUTFREQ,0.5)
 	patch.equalizer(CUTFREQ,QFACTOR,gain)
-	patch.build(FILE_NAME_PATH,filenameout)
+	print FILE_NAME_PATH
+	print output_file_path
+	patch.build(FILE_NAME_PATH,output_file_path)
 	return patch
-def afraid_sox_init(speed,depth,number_of_bends,start_time_now,end_time_now,cents,filenameout):
+def afraid_sox_init(speed,depth,number_of_bends,start_time_now,end_time_now,cents,output_file_path):
 	patch = Transformer()
 	patch.tremolo(speed,depth)
 	patch.tempo(1.05,'s')
 	patch.gain(1.1)
 	#patch.bend(number_of_bends,start_time_now,end_time_now,cents,50)			
-	patch.build(FILE_NAME_PATH,filenameout)
+	patch.build(FILE_NAME_PATH,output_file_path)
 	return patch
-def happy_tensed_sox_init(filenameout,semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,gain,QFACTOR):
+def happy_tensed_sox_init(output_file_path,semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,gain,QFACTOR):
 	patch = Transformer()
 	patch.pitch(semitones,False)
 	patch.tempo(1.18,'s')
@@ -174,22 +170,21 @@ def happy_tensed_sox_init(filenameout,semitones,number_of_bends,start_time_now,e
 	#patch.bend(number_of_bends,start_time_now,end_time_now,cents,50)			
 	patch.treble(gain,CUTFREQ,0.5)
 	patch.equalizer(CUTFREQ,QFACTOR,gain)
-	patch.build(FILE_NAME_PATH,filenameout)
+	patch.build(FILE_NAME_PATH,output_file_path)
 	return patch
-def sad_sox_init(semitones,gain,CUTFREQ,filenameout):
+def sad_sox_init(semitones,gain,CUTFREQ,output_file_path):
 	CUTFREQ = 3500
 	patch = Transformer()
 	patch.pitch(semitones,False)
 	patch.tempo(0.95,'s')
-	patch.treble(gain,CUTFREQ,0.5)	
-	patch.build(FILE_NAME_PATH,filenameout)
+	patch.treble(gain,CUTFREQ,0.5)
+	patch.build(FILE_NAME_PATH,output_file_path)
 	return patch
 
 
 def happy_patch(sampleFrequency,utterance_begin):
 	"""
 	happy_patch(sampleFrequency,utterance_begin)
-
 			The module helps to synthesis the "Happy" Emotion 
 			using the picth shift, picth bend(inflection) and filtering
 		
@@ -200,20 +195,19 @@ def happy_patch(sampleFrequency,utterance_begin):
 	
 	See: appended_utterance_time_stamps(CONSECUTIVE_BLOCKS,TIME_STAMPS,selected_inflect_block)
 	"""
-	filenameout = "/home/dereje/Desktop/TestFolder/TestHappy.wav"
+
 	gain = 3.0
 	semitones = 1.5 * PARAMETER_CONTROL
 	start_time_now,end_time_now=start_end_times(utterance_begin)
 	cents = happy_cents_for_utterance(start_time_now)
 	start_time_now,end_time_now=concatenate_list(start_time_now,end_time_now)
 	number_of_bends = len(start_time_now)
-	happy_patch = happy_sox_init(filenameout,semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,gain,QFACTOR)
+	happy_patch = happy_sox_init(output_file_path,semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,gain,QFACTOR)
 	return happy_patch
 
 def happy_tensed_patch(sampleFrequency,utterance_begin):
 	"""
 	happy_tensed_patch(sampleFrequency,utterance_begin)
-
 			The module helps to synthesis the "Happy_Tensed" Emotion 
 			using the picth shift, picth bend(inflection) and filtering
 		
@@ -226,41 +220,38 @@ def happy_tensed_patch(sampleFrequency,utterance_begin):
 	
 	"""
 
-	filenameout = "/home/dereje/Desktop/TestFolder/TestTensedHappy.wav"
+
 	gain = 3.0
 	semitones = 2.0 * PARAMETER_CONTROL
 	start_time_now,end_time_now=start_end_times(utterance_begin)
 	cents = happy_tensed_cents_for_utterance(start_time_now)
 	start_time_now,end_time_now=concatenate_list(start_time_now,end_time_now)
 	number_of_bends = len(start_time_now)
-	happy_tensed_patch = happy_tensed_sox_init(filenameout,semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,gain,QFACTOR)
+	happy_tensed_patch = happy_tensed_sox_init(output_file_path,semitones,number_of_bends,start_time_now,end_time_now,cents,CUTFREQ,gain,QFACTOR)
 	return happy_tensed_patch
 
 
 def sad_patch(sampleFrequency):
 	"""
 	sad_patch(sampleFrequency,utterance_begin)
-
 			The module helps to synthesis the "Sad" Emotion 
 			using the picth shift and through filtering
 		
 		Parameter: sampleFrequency
 		
 		Return:	   sad_patch	
-
 	"""
 
-	filenameout = "/home/dereje/Desktop/TestFolder/TestSad.wav"
+
 	gain = 0.25
 	semitones = -1.5 * PARAMETER_CONTROL
-	sad_patch = sad_sox_init(semitones,gain,CUTFREQ,filenameout)
+	sad_patch = sad_sox_init(semitones,gain,CUTFREQ,output_file_path)
 	return sad_patch
 
 
 def afraid_patch(sampleFrequency,utterance_begin):
 	"""
 	afraid_patch(sampleFrequency,utterance_begin)
-
 			The module helps to synthesis the "Afraid" Emotion 
 			using the picth bend(inflection) and tremelo
 		
@@ -274,12 +265,13 @@ def afraid_patch(sampleFrequency,utterance_begin):
 	"""
 
 
-	filenameout = "/home/dereje/Desktop/TestFolder/TestAfraid.wav"
+
 	speed = 8.5
 	depth = 1 + (60 * PARAMETER_CONTROL)
 	start_time_now,end_time_now=start_end_times(utterance_begin)
 	cents = afraid_cents_for_utterance(start_time_now)
 	start_time_now,end_time_now = concatenate_list(start_time_now,end_time_now)
 	number_of_bends = len(start_time_now)
-	afraid_patch = afraid_sox_init(speed,depth,number_of_bends,start_time_now,end_time_now,cents,filenameout)
+	afraid_patch = afraid_sox_init(speed,depth,number_of_bends,start_time_now,end_time_now,cents,output_file_path)
 	return afraid_patch
+

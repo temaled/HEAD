@@ -2,13 +2,12 @@ import numpy as np
 import analysis as alysis
 import preprocess as prep
 import synthesis as synth
+import rospy
 
 def process_variables(x,fs,CHUNK_SIZE):
 	"""
 	process_variables(x,fs,CHUNK_SIZE)
-
 			computes basic variables important for the entire process.
-
 		Parameters: x-discrete data from the wavefile
 					fs-sampling frequency
 					Chunk_Size- The size of block containing datas
@@ -29,7 +28,6 @@ def batch_analysis(x,fs,CHUNK_SIZE):
 	
 			computes the fundamental frequency/pitch of blocks/,voiced_samples and the rms values 
 			that are important for analysis and will be used for pre-process
-
 		Parameters:  x-discrete data from the wavefile
 					 fs-sampling frequency
 					 Chunk_Size- The size of block containing datas
@@ -56,12 +54,10 @@ def batch_preprocess(fundamental_frequency_in_blocks,voiced_samples,rms):
 	
 			This is the pre-process or pre-synthesis stage. This module computes the
 			samples for the begining of utterances and finally computes the selected_inflect_block 
-
 		Parameters: fundamental_frequency_in_blocks-This is a fundamental frequency(or pitch) 
 					for the blocks in Chunk_Size
 					voiced_samples-This are samples that contain the voiced samples.
 					rms-is the root mean square computation
-
 		Returns:	selected_inflect_block- are the blocks that are important for the synthesis process
 	"""
 
@@ -86,23 +82,24 @@ def batch_synthesis(fs,CONSECUTIVE_BLOCKS,TIME_STAMPS,selected_inflect_block_new
 					TIME_STAMPS
 					selected_inflect_block_new
 					typeOfEmotion
-
 		Returns: 	output- Modified/Synthesised wavefile
 	"""
-	if typeOfEmotion == "Happy":
+	#synth.FILE_NAME_PATH=rospy.get_param('file_path')
+
+	if typeOfEmotion == "happy":
 		selected_inflect_block = selected_inflect_block_new
 		utterance_time_stamps = synth.appended_utterance_time_stamps(CONSECUTIVE_BLOCKS,TIME_STAMPS,selected_inflect_block)
 		output = synth.happy_patch(fs,utterance_time_stamps)	
 	
-	if typeOfEmotion == "HappyTensed":	
+	if typeOfEmotion == "happy_tensed":	
 		selected_inflect_block = selected_inflect_block_new
 		utterance_time_stamps = synth.appended_utterance_time_stamps(CONSECUTIVE_BLOCKS,TIME_STAMPS,selected_inflect_block)
 		output = synth.happy_tensed_patch(fs,utterance_time_stamps)
 
-	if typeOfEmotion == "Sad":	
+	if typeOfEmotion == "sad":	
 		output = synth.sad_patch(fs)
 	
-	if typeOfEmotion == "Afraid":
+	if typeOfEmotion == "afraid":
 		selected_inflect_block = selected_inflect_block_new
 		utterance_time_stamps = synth.appended_utterance_time_stamps(CONSECUTIVE_BLOCKS,TIME_STAMPS,selected_inflect_block)
 		output = synth.afraid_patch(fs,utterance_time_stamps)

@@ -17,10 +17,8 @@ def wave_file_read(filename):
 def utterance_region_begin_samples(voiced_samples):
 	"""
 	utterance_region_begin_samples(voiced_samples)
-
 			utterance_region_begin_samples - This module help in finding 
 			the begining of voice samples and its respective index.
-
 		Parameter: voiced_samples
 		
 		Returns:voice_sample_begin-Contains array that 
@@ -45,14 +43,10 @@ def utterance_chunk(voiced_samples,voice_sample_index):
 			Eg. [1,2][6,7,8,9,10][34,35,36],[45,46,47,48]
 				This wavefile has Four Utterance Chunks
 			The voiced and unvoiced samples currently use zero crossing rate(zcr) to classify regions.
-
 		Parameters:voiced_samples
 				   voice_sample_index
-
 		Returns: voiced_chunk_samples
-
 	See also: zero_crossing_rate_blocks(wavedata,Chunk_Size,fs)
-
 	"""
 	voiced_chunk_samples = []
 	for i in range (len(voice_sample_index)-1):
@@ -62,11 +56,9 @@ def utterance_chunk(voiced_samples,voice_sample_index):
 def pre_process(Voiced_Samples):
 	"""
 	pre_process(Voiced_Samples)
-
 		Parameters: Voiced_Samples
 		
 		Returns: inflection_voices_samples - samples of the inflection voiced sample 
-
 	"""
 
 	inflection_voices_samples = np.array(Voiced_Samples)
@@ -79,7 +71,6 @@ def potential_inflection_fundamental_frequency(Fundamental_Frequency_of_Voiced_S
 def matrix_of_sample_numbers(RMS,inflection_voices_samples):     	
 	"""
 	matrix_of_sample_numbers(RMS,inflection_voices_samples)
-
 			[inflect_sample] This matrix contains sample numbers for a difference 
 			of voiced samples that are less than the mean of the RMS values. 
 			According to D.A.V.I.D, this samples are recorded as attack  
@@ -137,7 +128,6 @@ def selected_inflect_block_new(inflection_sample_numbers):
 		Returns:	selected_inflect_block - are the selected inflect blocks 
 					that will be helpful for the 
 					entire synthsis properties 
-
 	"""
 	selected_inflect_block_new = []
 	for i in range (len(inflection_sample_numbers)-1):
